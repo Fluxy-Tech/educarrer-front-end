@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/lib/utils/auth-client"
+import { useSession } from "@/lib/auth/auth-client"
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSession()

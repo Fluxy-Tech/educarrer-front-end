@@ -1,4 +1,4 @@
-import { redis } from "@/lib/redis/redis";
+import { redis } from "@/lib/redis/conection";
 
 export async function clearVacancysByUserIdCache(userId: string): Promise<boolean> {
     try {

@@ -1,7 +1,6 @@
 import { UserRepository } from "@/lib/repositories/user";
 import { CreateUserDTO, UpdateUserDTO } from "@/lib/interfaces/user.interface";
-import { auth } from "@/lib/utils/auth";
-import { ur } from "zod/v4/locales";
+import { auth } from "@/lib/auth/auth";
 
 const userRepository = new UserRepository();
 

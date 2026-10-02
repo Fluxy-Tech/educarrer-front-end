@@ -24,6 +24,30 @@ export class ExperienceRepository {
         ));
     }
 
+    async getExperienceByUserIdAndId(id: string): Promise<ExperienceDTO | null> {
+        const experience = await prisma.experience.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if (experience) {
+            return new Experience(
+                experience.id,
+                experience.name,
+                experience.seniority,
+                experience.about,
+                experience.startDate,
+                experience.endDate,
+                experience.currentJob,
+                experience.updatedAt,
+                experience.userId
+            )
+        }
+
+        return null;
+    }
+
     async createExperience(data: CreateExperienceDTO): Promise<ExperienceDTO> {
         const experience = await prisma.experience.create({
             data

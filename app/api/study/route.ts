@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/utils/auth";
-import { getStudyByUserId, createStudy } from "@/lib/services/study";
+import { auth } from "@/lib/auth/auth";
+import { getStudyWithoutSessionByUserId, createStudy } from "@/lib/services/study";
 
 export async function GET(req: Request) {
   try {
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
     const user = session.user;
 
-    const studies = await getStudyByUserId(user.id);
+    const studies = await getStudyWithoutSessionByUserId(user.id);
 
     return NextResponse.json({
       status: true,

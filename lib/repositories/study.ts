@@ -23,6 +23,7 @@ import {
 export class StudyRepository {
 
     private mapToEntity(study: any): Study {
+        
         const sectionOrder: Record<string, number> = {
             resume: 1,
             strengths: 2,
@@ -34,7 +35,6 @@ export class StudyRepository {
         return new Study(
             study.id,
             study.title,
-
             study.sections
                 .sort(
                     (a: any, b: any) =>
@@ -92,6 +92,7 @@ export class StudyRepository {
 
             study.createdAt,
             study.updatedAt,
+            study.vacancy,
             study.userId
         );
     }
@@ -103,10 +104,12 @@ export class StudyRepository {
             [],
             study.createdAt,
             study.updatedAt,
+            study.vacancy,
             study.userId
         );
     }
 
+    // Coletar todos estudos com todos os dados de um usuario
     async getStudyByUserId(userId: string): Promise<StudyDTO[]> {
         const studies = await prisma.study.findMany({
             where: {
@@ -126,23 +129,7 @@ export class StudyRepository {
         return studies.map((study) => this.mapToEntity(study));
     }
 
-    async getStudyByUserIdClear(userId: string) {
-        const studies = await prisma.study.findMany({
-            where: {
-                userId
-            },
-            select: {
-                id: true,
-                title: true,
-                userId: true,
-                createdAt: true,
-                vacancy: true,
-            }
-        });
-
-        return studies;
-    }
-
+    // Coletar estudo de um usurio atraves do id de uma vaga
     async getStudyByUserIdAndVancacyId(userId: string, vacancyId: string) {
         const study = await prisma.study.findFirst({
             where: {
@@ -160,11 +147,10 @@ export class StudyRepository {
             },
         });
 
-        console.log(study)
-
         return study;
     }
 
+    // Coletar estudo de um usuario
     async getStudyById(id: string): Promise<StudyDTO | null> {
         const study = await prisma.study.findUnique({
             where: {
@@ -205,7 +191,7 @@ export class StudyRepository {
         return studies.map((study) => this.mapToEntity(study));
     }
 
-    // Estudo vazio
+    // Criar um estudo vazio somente com titulo, id de usuario e id da vaga
     async createStudyEmpty(data: CreateStudyDTO): Promise<StudyDTO> {
         const study = await prisma.study.create({
             data: {
@@ -218,7 +204,7 @@ export class StudyRepository {
         return this.mapToEntityEmpty(study);
     }
 
-    // Sessões de estudo
+    // Criar sessões de um estudo
     async createSectionStudy(data: CreateStudySectionDTO): Promise<StudySectionDTO> {
         const study = await prisma.studySection.create({
             data: {
@@ -242,7 +228,7 @@ export class StudyRepository {
         );
     }
 
-    // Sessão de pontos fortes do candidato
+    // Criar sessão de pontos fortes do candidato
     async createSectionStrength(data: CreateStudyStrengthDTO): Promise<StudyStrengthDTO> {
         const study = await prisma.studyStrength.create({
             data: {
@@ -262,8 +248,7 @@ export class StudyRepository {
         );
     }
 
-
-    // Seção de estudos
+    // Criar sessão de estudos
     async createSectionGap(data: CreateStudyGapDTO): Promise<StudyGapDTO> {
         const study = await prisma.studyGap.create({
             data: {
@@ -289,7 +274,7 @@ export class StudyRepository {
         );
     }
 
-    // Plano de estudos
+    // Cirar plano de estudos
     async createSectionPlan(data: CreateStudyPlanDTO): Promise<StudyPlanDTO> {
         const study = await prisma.studyPlan.create({
             data: {
@@ -309,6 +294,7 @@ export class StudyRepository {
         );
     }
 
+    // Coletar a quantidade de estudos que temos cadastrado na base
     async getCountStudyes(): Promise<number> {
         return await prisma.study.count();
     }

@@ -26,7 +26,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { authClient, useSession } from "@/lib/utils/auth-client"
+import { authClient, useSession } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

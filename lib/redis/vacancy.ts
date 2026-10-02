@@ -1,10 +1,8 @@
-import { redis } from "@/lib/redis/redis";
+import { redis } from "@/lib/redis/conection";
 import { Vacancy } from "@/lib/entities/vacancy";
 import { VacancyRepository } from "@/lib/repositories/vacancy";
-import { getSkillByUserId } from "@/lib/services/skill";
-import { getExperienceByUserId } from "@/lib/services/experience";
+
 import { VacancyDTO } from "@/lib/interfaces/vacancy.interface";
-import { HundleStudyWithOpenAi } from "@/lib/services/hundleStudyWithOpenAi";
 
 interface UsersVacancysCache {
     userId: string,
@@ -12,6 +10,16 @@ interface UsersVacancysCache {
 }
 
 export class getVacancysFromRedis {
+
+    async setVacancyInRedis(userId: string, vacancys: VacancyDTO[]) {
+        const cacheKey = `vacancys:${userId}`;
+        await redis.set(
+            cacheKey,
+            JSON.stringify(vacancys),
+            "EX",
+            3600
+        );
+    }
 
     async getVacancysFromRedis(userId: string): Promise<Vacancy[]> {
         try {
@@ -48,82 +56,7 @@ export class getVacancysFromRedis {
                 }
             }
 
-            const vacancyRepository = new VacancyRepository();
-
-            const [vacancys, skills, experiences] = await Promise.all([
-                vacancyRepository.getVacancys(),
-                getSkillByUserId(userId),
-                getExperienceByUserId(userId)
-            ]);
-
-            if (skills.length === 0) {
-                return [];
-            }
-
-            const openAi = new HundleStudyWithOpenAi();
-
-            const response = await openAi.filterVacancysToUser(
-                skills,
-                experiences,
-                vacancys
-            );
-
-            if (!response) {
-                return [];
-            }
-
-            const resAgentFilter = JSON.parse(response);
-
-            if (!resAgentFilter.ids) {
-                return [];
-            }
-
-            const vacancyIds = resAgentFilter.ids;
-
-            if (!Array.isArray(vacancyIds) || vacancyIds.length === 0) {
-                return [];
-            }
-
-            const vacanciesFiltered: VacancyDTO[] = []
-            
-            for (const id of vacancyIds) {
-                const vacancyFindFirst = vacancys.find((v) => v.id == id);
-
-                if (vacancyFindFirst) {
-                    vacanciesFiltered.push(vacancyFindFirst);
-                }
-            }
-
-            await redis.set(
-                cacheKey,
-                JSON.stringify(vacanciesFiltered),
-                "EX",
-                3600
-            );
-
-            console.log("Vacancies fetched from database and cached.");
-
-            return vacanciesFiltered.map(
-                (vacancy) =>
-                    new Vacancy(
-                        vacancy.id,
-                        vacancy.title,
-                        vacancy.description,
-                        vacancy.company ?? null,
-                        vacancy.modality ?? null,
-                        vacancy.level ?? null,
-                        vacancy.technologies,
-                        vacancy.link ?? null,
-                        vacancy.origin ?? null,
-                        vacancy.location ?? null,
-                        vacancy.salary ?? null,
-                        vacancy.createdAt,
-                        vacancy.updatedAt,
-                        vacancy.active,
-                        vacancy.matches ?? 0,
-                        vacancy.score ?? 0
-                    )
-            );
+            return [];
         } catch (error) {
             console.error("Error fetching vacancies:", error);
             return [];
@@ -195,7 +128,7 @@ export class getVacancysFromRedis {
         }
     }
 
-    async getVacancysByIdFromRedis(userId: string, id: string): Promise<Vacancy | null> {
+    async getVacanciesByIdFromRedis(id: string): Promise<Vacancy | null> {
         try {
 
             const cacheKey = `vacancys:${id}`;
@@ -248,40 +181,3 @@ export class getVacancysFromRedis {
         }
     }
 }
-
-
-// const namesSkills = skills.map((s) => s.name);
-
-// const vacancysRanked = vacancys
-//     .map((vacancy) => {
-//         const matches = vacancy.technologies.filter((tech) =>
-//             namesSkills.includes(tech)
-//         ).length;
-
-//         const score = matches / vacancy.technologies.length;
-
-//         return new Vacancy(
-//             vacancy.id,
-//             vacancy.title,
-//             vacancy.description,
-//             vacancy.company,
-//             vacancy.modality,
-//             vacancy.level,
-//             vacancy.technologies,
-//             vacancy.link,
-//             vacancy.origin,
-//             vacancy.location,
-//             vacancy.salary,
-//             vacancy.createdAt,
-//             vacancy.updatedAt,
-//             vacancy.active,
-//             matches,
-//             score
-//         )
-//     })
-//     .filter((item) => item.score ? item.score >= 0.4 : 0.0) // mínimo de 40%
-//     .sort((a, b) => {
-//         const scoreA = a.score ?? 0;
-//         const scoreB = b.score ?? 0;
-//         return scoreB - scoreA;
-//     });

@@ -1,4 +1,4 @@
-import { redis } from "@/lib/redis/redis";
+import { redis } from "@/lib/redis/conection";
 
 export async function clearVacancysCache(): Promise<number> {
     let cursor = "0";

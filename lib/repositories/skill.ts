@@ -61,4 +61,26 @@ export class SkillRepository {
             skill.userId
         );
     }
+
+    async getSkillByUserIdAndId(userId: string, id: string): Promise<SkillDTO | null> {
+        const skill = await prisma.skill.findUnique({
+            where: {
+                id,
+                userId
+            }
+        })
+
+        if (!skill) {
+            return null;
+        }
+
+        return new Skill(
+            skill.id,
+            skill.name,
+            skill.level,
+            skill.about,
+            skill.updatedAt,
+            skill.userId
+        )
+    }
 }

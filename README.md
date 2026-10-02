@@ -121,3 +121,11 @@ docker compose up -d ( "Para rodar compose pela primeira vez" )
 
 docker compose up -d --build ( "Para rebuildar projeto apos a primeira vez" )
 
+
+# Acessar banco de dados dentro do docker
+
+- O su - postgres troca o usuário do terminal para o usuário postgres do sistema operacional (Linux)
+su - postgres
+
+- Acessar o banco de dados
+psql -U educarrer -d edu_carrer_web

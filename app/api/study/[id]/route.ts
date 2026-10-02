@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/utils/auth";
+import { auth } from "@/lib/auth/auth";
 import { getStudyById } from "@/lib/services/study";
 
 
@@ -25,7 +25,7 @@ export async function GET(
       );
     }
 
-    const study = await getStudyById(id);
+    const study = await getStudyById(session.user.id, id);
 
     return NextResponse.json({
       status: true,

@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin } from "better-auth/plugins";
 import { prisma } from "../prisma";
 import nodemailer from "nodemailer";
-import { ResetPassword } from "@/lib/services/resetPassword"; 
+import { ResetPassword } from "@/lib/services/resetPassword";
 
 const PORT = process.env.PORT ?? "5401"
 
@@ -11,6 +11,11 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  session: {
+    expiresIn: 60 * 60 * 24 * 30, // 30 dias
+    updateAge: 60 * 60 * 24, // renova a cada 1 dia
+  },
+
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url, token }) => {

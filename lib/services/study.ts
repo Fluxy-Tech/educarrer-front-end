@@ -4,15 +4,41 @@ import { getSkillByUserId } from "@/lib/services/skill";
 import { getExperienceByUserId } from "@/lib/services/experience";
 import { getVacancysById } from "@/lib/services/vacancy";
 import { HundleStudyWithOpenAi } from "@/lib/services/hundleStudyWithOpenAi";
+import { StudyRedis } from "@/lib/redis/study";
+import { redis } from "@/lib/redis/conection";
 
 const studyRepository = new StudyRepository();
+const studyRedis = new StudyRedis();
 const hundleStudyWithOpenAi = new HundleStudyWithOpenAi();
 
-export async function getStudyByUserId(userId: string) {
-    return await studyRepository.getStudyByUserIdClear(userId);
+// Coletar todos estudos de um usuario sem as sessões de estudo
+export async function getStudyWithoutSessionByUserId(userId: string) {
+
+    const findStudyRedisInRedis = await studyRedis.getStudyByUserIdFromRedis(userId);
+
+    if (findStudyRedisInRedis) return findStudyRedisInRedis;
+
+    const findStudyRedisInDataBase = await studyRepository.getStudyByUserId(userId);
+
+    if (findStudyRedisInDataBase) {
+        studyRedis.setStudyInRedis(userId, findStudyRedisInDataBase);
+    }
+
+    const studysWithoutSession = findStudyRedisInDataBase.map((s) => {
+        s.id,
+            s.title,
+            s.userId,
+            s.createdAt,
+            s.vacancy,
+            s.updatedAt
+    });
+
+    return studysWithoutSession;
 }
 
+// Criar um estudo para usuario
 export async function createStudy(idVacancy: string, userId: string) {
+    await redis.del(`studys:${userId}`);
     const skills = await getSkillByUserId(userId);
 
     if (skills.length == 0) {
@@ -24,7 +50,7 @@ export async function createStudy(idVacancy: string, userId: string) {
 
     const experiences = await getExperienceByUserId(userId);
 
-    const vacancy = await getVacancysById(userId, idVacancy);
+    const vacancy = await getVacancysById(idVacancy);
 
     if (!vacancy) {
         return {
@@ -136,14 +162,30 @@ export async function createStudy(idVacancy: string, userId: string) {
     }
 }
 
-export async function getAllStudies() {
-    return await studyRepository.getAllStudy();
+// Coletar todos os estudos com sessões de um usuario pelo id
+export async function getAllStudies(userId: string) {
+    const findStudyRedisInRedis = await studyRedis.getStudyByUserIdFromRedis(userId);
+
+    if (findStudyRedisInRedis) return findStudyRedisInRedis;
+
+    const findStudyRedisInDataBase = await studyRepository.getStudyByUserId(userId);
+    if (findStudyRedisInDataBase) {
+        studyRedis.setStudyInRedis(userId, findStudyRedisInDataBase);
+    }
+
+    return findStudyRedisInDataBase;
 }
 
-export async function getStudyById(id: string) {
+// Coletar estudo pelo id do estudo
+export async function getStudyById(userId: string, id: string) {
+    const findStudyByUserIdAndIdRedisInRedis = await studyRedis.getStudyByUserIdAndIdFromRedis(userId, id);
+
+    if(findStudyByUserIdAndIdRedisInRedis) return findStudyByUserIdAndIdRedisInRedis;
+
     return await studyRepository.getStudyById(id);
 }
 
+// Coletar numero de estudos tem para tela de admin
 export async function getNumberTotalStudies() {
     return await studyRepository.getCountStudyes();
 }

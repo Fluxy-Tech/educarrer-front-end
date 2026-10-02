@@ -1,13 +1,25 @@
 import { ExperienceRepository } from "@/lib/repositories/experience";
 import { CreateExperienceDTO, UpdateExperienceDTO } from "@/lib/interfaces/experience.interface";
 import { ExperienceRedis } from "@/lib/redis/experience";
-import { redis } from "@/lib/redis/redis";
+import { redis } from "@/lib/redis/conection";
 
 const experienceRepository = new ExperienceRepository();
 const experienceRedis = new ExperienceRedis()
 
 export async function getExperienceByUserId(userId: string) {
-    return await experienceRedis.getExperiencesFromRedis(userId);
+    const listExperiencesFromRedis = await experienceRedis.getExperiencesFromRedis(userId);
+
+    if (listExperiencesFromRedis.length != 0) {
+        return listExperiencesFromRedis;
+    }
+
+    const listExperiencesFromDataBase = await experienceRepository.getExperienceByUserId(userId);
+
+    if (listExperiencesFromDataBase.length > 0) {
+        experienceRedis.setExperiencesInRedis(userId, listExperiencesFromDataBase);
+    }
+
+    return listExperiencesFromDataBase;
 }
 
 export async function createExperience(data: CreateExperienceDTO, userId: string) {
@@ -26,5 +38,12 @@ export async function updateExperience(id: string, data: Partial<UpdateExperienc
 }
 
 export async function getExperienceByUserIdAndId(userId: string, id: string) {
-    return await experienceRedis.getExperienceByUserIdAndIdFromRedis(userId, id);
+    const findExperienceByIdFromRedis = await experienceRedis.getExperienceByUserIdAndIdFromRedis(userId, id);
+
+    if (findExperienceByIdFromRedis) {
+        return findExperienceByIdFromRedis;
+    }
+
+    const findExperienceByIdFromDataBase = await experienceRepository.getExperienceByUserIdAndId(id);
+    return findExperienceByIdFromDataBase;
 }

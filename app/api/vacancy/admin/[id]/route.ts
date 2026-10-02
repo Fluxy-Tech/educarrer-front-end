@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/utils/auth";
+import { auth } from "@/lib/auth/auth";
 import { updateVacancy } from "@/lib/services/vacancy";
 
 export async function PUT(

@@ -5,6 +5,7 @@ export class Study {
     public sections: StudySection[],
     public createdAt: Date | null,
     public updatedAt: Date | null,
+    public vacancy: string,
     public userId: string
   ) {}
 }

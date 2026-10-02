@@ -6,6 +6,7 @@ export interface StudyDTO {
   sections: StudySectionDTO[];
   createdAt?: Date | null;
   updatedAt?: Date | null;
+  vacancy: string;
   userId: string;
 }
 

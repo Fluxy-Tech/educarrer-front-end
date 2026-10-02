@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { authClient } from "@/lib/utils/auth-client";
-import { auth } from "@/lib/utils/auth";
+import { authClient } from "@/lib/auth/auth-client";
+import { auth } from "@/lib/auth/auth";
 import { ResetPassword } from "@/lib/services/resetPassword";
 
 export async function POST(req: Request) {

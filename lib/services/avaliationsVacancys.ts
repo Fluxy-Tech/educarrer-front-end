@@ -59,7 +59,7 @@ function hasPassed2Days(createdAt: Date): boolean {
     return differenceMs >= twoDaysMs;
 }
 
-function hasPassed2HoursCreatedUser(createdAt: Date | undefined): boolean {
+async function hasPassed2HoursCreatedUser(createdAt: Date | undefined): Promise<boolean> {
     
     if (!createdAt) {
         return false;
